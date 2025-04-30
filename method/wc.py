@@ -7,7 +7,7 @@ from gdo.core.GDT_String import GDT_String
 
 class wc(Method):
 
-    def gdo_parameters(self) -> [GDT]:
+    def gdo_parameters(self) -> list[GDT]:
         return [
             GDT_String('username'),
         ]
