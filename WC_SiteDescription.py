@@ -13,17 +13,18 @@ from gdo.ui.GDT_Image import GDT_Image
 from gdo.ui.GDT_Score import GDT_Score
 from gdo.vote.GDT_VoteCount import GDT_VoteCount
 from gdo.vote.GDT_VoteResult import GDT_VoteResult
+from gdo.wechall.GDT_Site import GDT_Site
 from gdo.wechall.GDT_SiteState import GDT_SiteState
 from gdo.wechall.WC_SiteVoteDiff import WC_SiteVoteDiff
 from gdo.wechall.WC_SiteVoteFun import WC_SiteVoteFun
 
 
-class WC_Site(GDO):
+class WC_SiteDescription(GDO):
 
     def gdo_columns(self) -> list[GDT]:
         return [
-            GDT_AutoInc('site_id'),
-            GDT_SiteState('site_status').initial(GDT_SiteState.COMING_SOON).not_null(),
+            GDT_Site('sd_site').primary(),
+            GDT_Language('sd_lang').primary(),
 
             GDT_String('site_name').maxlen(48).not_null(),
             GDT_Name('site_classname').maxlen(12).not_null(),
@@ -61,10 +62,11 @@ class WC_Site(GDO):
             GDT_VoteCount('site_vote_dif').table(WC_SiteVoteDiff.table()),
             GDT_VoteCount('site_vote_fun').table(WC_SiteVoteFun.table()),
 
-            GDT_VoteResult('site_dif').table(WC_SiteVoteDiff.table()),
             GDT_VoteResult('site_fun').table(WC_SiteVoteFun.table()),
+            GDT_VoteResult('site_dif').table(WC_SiteVoteFun.table()),
 
-        # 'site_visit_in' = > array(GDO::UINT, 0),  # How many visitors go that site
+
+            # 'site_visit_in' = > array(GDO::UINT, 0),  # How many visitors go that site
         # 'site_visit_out' = > array(GDO::UINT, 0),  # How many visitors come from that site
         # 'site_options' = > array(GDO::UINT | GDO::INDEX, 0),
 
