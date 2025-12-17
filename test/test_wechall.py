@@ -2,7 +2,9 @@ import os
 
 from gdo.base.Application import Application
 from gdo.base.ModuleLoader import ModuleLoader
-from gdotest.TestUtil import GDOTestCase, reinstall_module, web_plug, cli_plug
+from gdo.core.method.clear_cache import clear_cache
+from gdo.wechall.WC_Site import WC_Site
+from gdotest.TestUtil import GDOTestCase, reinstall_module, install_module, cli_plug
 
 
 class WeChallTeet(GDOTestCase):
@@ -12,11 +14,15 @@ class WeChallTeet(GDOTestCase):
         Application.init(os.path.dirname(__file__ + "/../../../../"))
         loader = ModuleLoader.instance()
         loader.load_modules_db(True)
-        reinstall_module('wechall')
+        install_module('wechall')
         Application.init_cli()
         loader.init_modules(True, True)
         loader.init_cli()
+        await clear_cache().gdo_execute()
 
-    async def test_wechall_import(self):
+    async def test_01_wechall_import(self):
+        reinstall_module('wechall')
+        sites = WC_Site.table().all()
+        self.assertGreaterEqual(len(sites), 1, 'sites no work.')
         out = cli_plug(None, '$wechall.import_wc5 --submit=1')
         self.assertIn('imported', out, 'import does not work.')

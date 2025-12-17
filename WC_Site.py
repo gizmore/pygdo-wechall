@@ -1,10 +1,14 @@
+from gdo.base.Cache import gdo_cached
 from gdo.base.GDO import GDO
 from gdo.base.GDT import GDT
+from gdo.base.ModuleLoader import ModuleLoader
 from gdo.base.Trans import t
+from gdo.base.util.href import href
 from gdo.core.GDT_AutoInc import GDT_AutoInc
 from gdo.core.GDT_Bool import GDT_Bool
 from gdo.core.GDT_Creator import GDT_Creator
 from gdo.core.GDT_Editor import GDT_Editor
+from gdo.core.GDT_Float import GDT_Float
 from gdo.core.GDT_Name import GDT_Name
 from gdo.core.GDT_Secret import GDT_Secret
 from gdo.core.GDT_Select import GDT_Select
@@ -37,9 +41,26 @@ if TYPE_CHECKING:
 
 class WC_Site(GDO):
 
+    @classmethod
+    @gdo_cached(cache_key='wc_site_count')
+    def num_sites(cls) -> int:
+        return cls.table().count_where(cls.where_joined())
+
+    @classmethod
+    @gdo_cached(cache_key='wc_sites_joined')
+    def all_joined(cls) -> list[WC_Site]:
+        return cls.table().select().where(cls.where_joined()).exec().fetch_all()
+
+    @classmethod
+    def where_joined(cls):
+        return "site_status IN ('up', 'down', 'coming_soon')"
+
     def gdo_real_class(cls, vals: dict[str,str]) -> type[GDO]:
         from gdo.wechall.site.MAPPING import MAPPING
         return MAPPING.MAPPING.get(vals['site_class_name'], WC_Site)
+
+    def gdo_table_name(cls) -> str:
+        return 'wc_site'
 
     def gdo_columns(self) -> list[GDT]:
         from gdo.wechall.site.MAPPING import MAPPING
@@ -49,10 +70,10 @@ class WC_Site(GDO):
 
             GDT_String('site_name').maxlen(48).not_null().label('name'),
             GDT_Name('site_short_name').maxlen(12).not_null().label('short_name'),
-            GDT_Select('site_class_name').maxlen(12).not_null().choices(MAPPING.MAPPING).label('class_name'),
+            GDT_Select('site_class_name').maxlen(16).not_null().choices(MAPPING.MAPPING).label('class_name'),
             GDT_Message('site_description').maxlen(16384).label('description'),
 
-            GDT_Image('site_logo').label('logo'),
+            GDT_Image('site_logo').label('logo').width(32).height(32),
             GDT_Color('site_fg_color').label('fg_color'),
             GDT_Color('site_bg_color').label('bg_color'),
 
@@ -82,12 +103,11 @@ class WC_Site(GDO):
             GDT_Score('site_score').label('score'),
             GDT_Score('site_base_score').initial('10000').label('base_score'),
             GDT_UInt('site_pow_arg').not_null().initial('100'),
-            GDT_Score('site_avg'),
+            GDT_Float('site_avg'),
 
             GDT_UInt('site_max_score').label('max_score'),
             GDT_UInt('site_chall_count').label('chall_count'),
             GDT_UInt('site_user_count').label('user_count'),
-            # GDT_UInt('site_link_count').label('link_count'),
 
             GDT_VoteCount('site_vote_dif').table(WC_SiteVoteDiff.table()).label('num_votes_dif'),
             GDT_VoteCount('site_vote_edu').table(WC_SiteVoteDiff.table()).label('num_votes_edu'),
@@ -122,6 +142,13 @@ class WC_Site(GDO):
     def __repr__(self):
         return self.render_name()
 
+    def get_url(self) -> str:
+        return self.gdo_val('site_url')
+
+    ###########
+    # Scoring #
+    ###########
+
     def update_scores(self, regat: 'WC_RegAt') -> bool:
         raise WCException(t('err_not_implemented'))
 
@@ -131,6 +158,8 @@ class WC_Site(GDO):
     def render_name(self):
         return self.gdo_val('site_name')
 
-    @classmethod
-    def render_type_list(cls):
-        return cls.__name__
+    def render_icon(self):
+        icon = GDT_Image.column(self, 'site_logo')
+        file = icon.get_file() or ModuleLoader.instance().get_module('wechall').cfg_default_logo()
+        if file: file = file[0].get_id()
+        return icon.href(href('wechall', 'site_logo', f'&site={self.get_id()}&file={file}')).render_html()
