@@ -6,11 +6,13 @@ from gdo.core.GDO_Server import GDO_Server
 from gdo.core.GDO_User import GDO_User
 from gdo.core.GDO_UserSetting import GDO_UserSetting
 from gdo.core.GDT_Bool import GDT_Bool
+from gdo.date.Time import Time
 from gdo.form.GDT_Form import GDT_Form
 from gdo.form.MethodForm import MethodForm
 from gdo.wechall.WC_RegAt import WC_RegAt
 from gdo.wechall.WC_RegAtHistory import WC_RegAtHistory
 from gdo.wechall.WC_Site import WC_Site
+from gdo.wechall.WC_SiteHistory import WC_SiteHistory
 
 
 class SiteOptions:
@@ -27,9 +29,9 @@ class SiteOptions:
 class ImportUtil:
     @staticmethod
     def date_convert_from_gwf3(ts: str) -> str|None:
-        ts = ts.strip()
         if not ts or set(ts) == {'0'}:
             return None
+        ts = ts.strip()
         parts = {
             'Y': ts[0:4],
             'm': ts[4:6] if len(ts) >= 6 else '01',
@@ -48,7 +50,7 @@ class ImportUtil:
     @classmethod
     @lru_cache(maxsize=None)
     def userid(cls, user_id: str) -> str|None:
-        return GDO_UserSetting.select('uset_user').where(f'uset_key="wc1_id" AND uset_val="{user_id}"').exec().fetch_val()
+        return GDO_UserSetting.table().select('uset_user').where(f'uset_key="wc1_id" AND uset_val="{user_id}"').exec().fetch_val()
 
 class import_wc5(MethodForm):
 
@@ -74,7 +76,7 @@ class import_wc5(MethodForm):
         if self.param_value('regat'): await self.import_regat(db)
         if self.param_value('user_history'): await self.import_regat_history(db)
         if self.param_value('site_history'): await self.import_site_history(db)
-        return self.render_page()
+        return self.msg('msg_wc5_imported')
 
     async def import_sites(self, db: Database):
         result = db.select("SELECT * FROM wc4_wc_site LEFT JOIN wc4_country ON wc4_country.country_id = site_country LEFT JOIN wc4_language ON wc4_language.lang_id = site_language")
@@ -146,27 +148,38 @@ class import_wc5(MethodForm):
         result = db.select("SELECT * FROM wc4_wc_regat")
         columns = WC_RegAt.table().columns_only('regat_site', 'regat_user', 'regat_onsite_name', 'regat_onsite_score', 'regat_onsite_solved', 'regat_onsite_rank', 'regat_first_link', 'regat_last_link')
         data = []
+        count = 0
         while row := result.fetch_assoc():
+            if not row['regat_onsitename']:
+                continue
             data.append([
                 row['regat_sid'],
                 ImportUtil.userid(row['regat_uid']),
                 row['regat_onsitename'],
-                row['regat_onsitescore'],
-                row['regat_challsolved'],
-                row['regat_onsiterank'],
+                None if int(row['regat_onsitescore'] or 0) < 0 else row['regat_onsitescore'],
+                None if int(row['regat_challsolved'] or 0) < 0 else row['regat_challsolved'],
+                None if int(row['regat_onsiterank'] or 0) <= 0 else row['regat_onsiterank'],
                 ImportUtil.date_convert_from_gwf3(row['regat_linkdate']),
                 ImportUtil.date_convert_from_gwf3(row['regat_lastdate']),
             ])
+            count += 1
+            if count % 1000 == 0:
+                gdo_print("Importing regats: " + str(count))
+                WC_RegAt.table().bulk_insert(columns, data)
+                data.clear()
         WC_RegAt.table().bulk_insert(columns, data)
 
     async def import_regat_history(self, db: Database):
         result = db.select("SELECT * FROM wc4_wc_user_history2")
         columns = WC_RegAtHistory.table().columns_only('rh_site', 'rh_user', 'rh_type', 'rh_score', 'rh_percent', 'rh_gain_score', 'rh_gain_percent', 'rh_onsite_score', 'rh_onsite_solved', 'rh_onsite_rank', 'rh_created')
         data = []
+        count = 0
         while row := result.fetch_assoc():
+            if not (uid := ImportUtil.userid(row['userhist_uid'])):
+                continue
             data.append([
                 row['userhist_sid'],
-                ImportUtil.userid(row['userhist_uid']),
+                uid,
                 row['userhist_type'],
                 row['userhist_totalscore'],
                 str(float(row['userhist_percent']) / 100.0),
@@ -175,24 +188,35 @@ class import_wc5(MethodForm):
                 row['userhist_onsitescore'],
                 None,
                 row['userhist_onsiterank'],
-                ImportUtil.date_convert_from_gwf3(row['userhist_date']),
+                Time.get_date(int(row['userhist_date'])),
             ])
+            count += 1
+            if count % 1000 == 0:
+                gdo_print("Importing regat history: " + str(count))
+                WC_RegAtHistory.table().bulk_insert(columns, data)
+                data.clear()
         WC_RegAtHistory.table().bulk_insert(columns, data)
+
 
     async def import_site_history(self, db: Database):
         result = db.select("SELECT * FROM wc4_wc_site_history")
-        columns = WC_RegAt.table().columns_only('regat_site', 'regat_user', 'regat_onsite_name', 'regat_onsite_score', 'regat_onsite_solved', 'regat_onsite_rank', 'regat_first_link', 'regat_last_link')
+        columns = WC_SiteHistory.table().columns_only('sh_site', 'sh_score', 'sh_user_count', 'sh_chall_count', 'sh_created')
         data = []
+        count = 0
         while row := result.fetch_assoc():
+            uc = int(row['sitehist_usercount'])
+            cc = int(row['sitehist_challcount'])
             data.append([
-                row['regat_sid'],
-                ImportUtil.userid(row['regat_uid']),
-                row['regat_onsitename'],
-                row['regat_onsitescore'],
-                row['regat_challsolved'],
-                row['regat_onsiterank'],
-                ImportUtil.date_convert_from_gwf3(row['regat_linkdate']),
-                ImportUtil.date_convert_from_gwf3(row['regat_lastdate']),
+                row['sitehist_sid'],
+                row['sitehist_score'],
+                None if uc <= 0 else str(uc),
+                None if cc <= 0 else str(cc),
+                Time.get_date(int(row['sitehist_date'])),
             ])
-        WC_RegAt.table().bulk_insert(columns, data)
+            count += 1
+            if count % 1000 == 0:
+                gdo_print("Importing site history: " + str(count))
+                WC_SiteHistory.table().bulk_insert(columns, data)
+                data.clear()
+        WC_SiteHistory.table().bulk_insert(columns, data)
 

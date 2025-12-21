@@ -4,6 +4,7 @@ from gdo.base.GDT import GDT
 from gdo.base.ModuleLoader import ModuleLoader
 from gdo.base.Trans import t
 from gdo.base.util.href import href
+from gdo.core.GDO_User import GDO_User
 from gdo.core.GDT_AutoInc import GDT_AutoInc
 from gdo.core.GDT_Bool import GDT_Bool
 from gdo.core.GDT_Creator import GDT_Creator
@@ -30,6 +31,7 @@ from gdo.vote.GDT_VoteCount import GDT_VoteCount
 from gdo.vote.GDT_VoteResult import GDT_VoteResult
 from gdo.wechall.GDT_SiteState import GDT_SiteState
 from gdo.wechall.WCException import WCException
+from gdo.wechall.WC_SiteHistory import WC_SiteHistory
 from gdo.wechall.WC_SiteVoteDiff import WC_SiteVoteDiff
 from gdo.wechall.WC_SiteVoteFun import WC_SiteVoteFun
 
@@ -152,6 +154,49 @@ class WC_Site(GDO):
     def update_scores(self, regat: 'WC_RegAt') -> bool:
         raise WCException(t('err_not_implemented'))
 
+    def calc_site_score(self):
+        pass
+
+
+    ########
+    # URLs #
+    ########
+    def get_url_replaced(self, url: str, onsite_name: str, email: str = 'None') -> str:
+        return url.replace('%EMAIL%', email).replace('%USERNAME%', onsite_name).replace('%AUTH_TOKEN%', self.gdo_val('site_x_authkey'))
+
+    def get_site_url_base(self, key: str) -> str:
+        url = self.gdo_val(key) or ''
+        if ':' in url: return url
+        base = self.gdo_val('site_url')
+        return base.strip('/') + '/' + url.strip('/')
+
+    def get_link_url(self, onsite_name: str, email: str):
+        url = self.get_site_url_base('site_url_mail')
+        return self.get_url_replaced(url, onsite_name, email)
+
+    def get_score_url(self, onsite_name: str):
+        url = self.get_site_url_base('site_url_score')
+        return self.get_url_replaced(url, onsite_name)
+
+    def get_profile_url(self, onsite_name: str):
+        url = self.get_site_url_base('site_url_profile')
+        return self.get_url_replaced(url, onsite_name)
+
+
+    ########
+    # Link #
+    ########
+    def on_link(self, user: GDO_User, onsite_name: str):
+
+        pass
+
+    def on_update(self, user: GDO_User):
+        regat = WC_RegAt.table().get_by_id(self.get_id(), user.get_id())
+        (onsite_score, onsite_solved, onsite_rank, usercount, challcount) = self.update_scores(regat)
+        regat.save_vals({
+
+        })
+        WC_SiteHistory.on_update(self, usercount, challcount)
     ##########
     # Render #
     ##########
@@ -163,3 +208,4 @@ class WC_Site(GDO):
         file = icon.get_file() or ModuleLoader.instance().get_module('wechall').cfg_default_logo()
         if file: file = file[0].get_id()
         return icon.href(href('wechall', 'site_logo', f'&site={self.get_id()}&file={file}')).render_html()
+

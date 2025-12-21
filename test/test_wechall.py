@@ -2,12 +2,13 @@ import os
 
 from gdo.base.Application import Application
 from gdo.base.ModuleLoader import ModuleLoader
+from gdo.core.GDT_UserName import GDT_UserName
 from gdo.core.method.clear_cache import clear_cache
 from gdo.wechall.WC_Site import WC_Site
 from gdotest.TestUtil import GDOTestCase, reinstall_module, install_module, cli_plug
 
 
-class WeChallTeet(GDOTestCase):
+class WeChallTest(GDOTestCase):
 
     async def asyncSetUp(self) -> None:
         await super().asyncSetUp()
@@ -26,3 +27,9 @@ class WeChallTeet(GDOTestCase):
         self.assertGreaterEqual(len(sites), 1, 'sites no work.')
         out = cli_plug(None, '$wechall.import_wc5 --submit=1')
         self.assertIn('imported', out, 'import does not work.')
+
+    async def test_02_username_pattern(self):
+        gdt = GDT_UserName('regat_user').maxlen(64)
+        self.assertTrue(gdt.validate('0213'), 'Username validation failed.')
+        self.assertTrue(gdt.validate('abcdefghijklmnopqrstuvwxyz0123451234'), 'Username validation failed.')
+        self.assertFalse(gdt.validate('abcdefghijklmnopqrstuvwxyz012345abcdefghijklmnopqrstuvwxyz012345a'), 'Username validation failed.')
