@@ -1,14 +1,17 @@
 from functools import lru_cache
 
 from gdo.base.Database import Database
-from gdo.base.Util import gdo_print
+from gdo.base.Util import gdo_print, Files
+from gdo.core.GDO_File import GDO_File
 from gdo.core.GDO_Server import GDO_Server
 from gdo.core.GDO_User import GDO_User
 from gdo.core.GDO_UserSetting import GDO_UserSetting
 from gdo.core.GDT_Bool import GDT_Bool
+from gdo.core.GDT_UInt import GDT_UInt
 from gdo.date.Time import Time
 from gdo.form.GDT_Form import GDT_Form
 from gdo.form.MethodForm import MethodForm
+from gdo.wechall import module_wechall
 from gdo.wechall.WC_RegAt import WC_RegAt
 from gdo.wechall.WC_RegAtHistory import WC_RegAtHistory
 from gdo.wechall.WC_Site import WC_Site
@@ -54,20 +57,24 @@ class ImportUtil:
 
 class import_wc5(MethodForm):
 
-    USER_MAPPING: dict[str, tuple[dict[str, str], GDO_User]] = {}
-
     def gdo_transactional(self) -> bool:
         return False
 
     def gdo_create_form(self, form: GDT_Form) -> None:
         form.add_fields(
-            GDT_Bool('sites').initial('1'),
+            GDT_UInt('samples').initial('5000'),
             GDT_Bool('users').initial('1'),
+            GDT_Bool('sites').initial('1'),
             GDT_Bool('regat').initial('1'),
             GDT_Bool('user_history').initial('1'),
             GDT_Bool('site_history').initial('1'),
         )
         super().gdo_create_form(form)
+
+    def get_limit(self) -> str:
+        if samples := self.param_value('samples'):
+            return f"LIMIT {samples}"
+        return ''
 
     async def form_submitted(self):
         db = Database('localhost', 'wechall', 'wechall', 'wechall')
@@ -79,10 +86,10 @@ class import_wc5(MethodForm):
         return self.msg('msg_wc5_imported')
 
     async def import_sites(self, db: Database):
-        result = db.select("SELECT * FROM wc4_wc_site LEFT JOIN wc4_country ON wc4_country.country_id = site_country LEFT JOIN wc4_language ON wc4_language.lang_id = site_language")
+        result = db.select(f"SELECT * FROM wc4_wc_site LEFT JOIN wc4_country ON wc4_country.country_id = site_country LEFT JOIN wc4_language ON wc4_language.lang_id = site_language {self.get_limit()}")
         while row := result.fetch_assoc():
             opts = int(row['site_options'])
-            WC_Site.blank({
+            site = WC_Site.blank({
                 'site_id': row['site_id'],
                 'site_status': row['site_status'],
                 'site_name': row['site_name'],
@@ -131,21 +138,29 @@ class import_wc5(MethodForm):
                 'site_linear_challs': '1' if opts & SiteOptions.LINEAR else '0',
                 'site_has_no_email': '1' if opts & SiteOptions.NO_EMAIL else '0',
             }).soft_replace()
+            if not site.get_logo_file():
+                icon_path = module_wechall.instance().file_path(f'import/logo/{site.get_id()}')
+                if Files.is_file(icon_path):
+                    icon = GDO_File.from_path(icon_path)
+                    site.save_val('site_logo', icon.get_id())
 
     async def import_users(self, db: Database):
-        result = db.select("SELECT * FROM wc4_user")
+        result = db.select(f"SELECT * FROM wc4_user LEFT JOIN wc4_country ON wc4_country.country_id = user_countryid {self.get_limit()}")
         web = GDO_Server.get_by_connector('web')
         count = 0
         while row := result.fetch_assoc():
             new_user = await web.get_or_create_user(row['user_name'])
-            self.USER_MAPPING[row['user_id']] = (row, new_user)
             new_user.save_setting('wc1_id', row['user_id'])
+            country = row['country_tld'].upper() if row['country_tld'] else None
+            if country != 'CS':
+                if country: new_user.save_setting('country_living', country)
+                if country: new_user.save_setting('country_ethnics', country)
             count += 1
             if count % 1000 == 0:
                 gdo_print("Importing users: " + str(count))
 
     async def import_regat(self, db: Database):
-        result = db.select("SELECT * FROM wc4_wc_regat")
+        result = db.select(f"SELECT * FROM wc4_wc_regat {self.get_limit()}")
         columns = WC_RegAt.table().columns_only('regat_site', 'regat_user', 'regat_onsite_name', 'regat_onsite_score', 'regat_onsite_solved', 'regat_onsite_rank', 'regat_first_link', 'regat_last_link')
         data = []
         count = 0
@@ -170,7 +185,7 @@ class import_wc5(MethodForm):
         WC_RegAt.table().bulk_insert(columns, data)
 
     async def import_regat_history(self, db: Database):
-        result = db.select("SELECT * FROM wc4_wc_user_history2")
+        result = db.select(f"SELECT * FROM wc4_wc_user_history2 {self.get_limit()}")
         columns = WC_RegAtHistory.table().columns_only('rh_site', 'rh_user', 'rh_type', 'rh_score', 'rh_percent', 'rh_gain_score', 'rh_gain_percent', 'rh_onsite_score', 'rh_onsite_solved', 'rh_onsite_rank', 'rh_created')
         data = []
         count = 0
@@ -199,7 +214,7 @@ class import_wc5(MethodForm):
 
 
     async def import_site_history(self, db: Database):
-        result = db.select("SELECT * FROM wc4_wc_site_history")
+        result = db.select(f"SELECT * FROM wc4_wc_site_history {self.get_limit()}")
         columns = WC_SiteHistory.table().columns_only('sh_site', 'sh_score', 'sh_user_count', 'sh_chall_count', 'sh_created')
         data = []
         count = 0

@@ -3,7 +3,9 @@ from gdo.base.GDO import GDO
 from gdo.base.GDT import GDT
 from gdo.base.ModuleLoader import ModuleLoader
 from gdo.base.Trans import t
+from gdo.base.Util import NumericUtil
 from gdo.base.util.href import href
+from gdo.core.GDO_File import GDO_File
 from gdo.core.GDO_User import GDO_User
 from gdo.core.GDT_AutoInc import GDT_AutoInc
 from gdo.core.GDT_Bool import GDT_Bool
@@ -104,6 +106,7 @@ class WC_Site(GDO):
 
             GDT_Score('site_score').label('score'),
             GDT_Score('site_base_score').initial('10000').label('base_score'),
+            GDT_Score('site_score_per_chall').label('score_per_chall').initial('100'),
             GDT_UInt('site_pow_arg').not_null().initial('100'),
             GDT_Float('site_avg'),
 
@@ -147,6 +150,9 @@ class WC_Site(GDO):
     def get_url(self) -> str:
         return self.gdo_val('site_url')
 
+    def get_logo_file(self) -> GDO_File:
+        return self.gdo_value('site_logo')
+
     ###########
     # Scoring #
     ###########
@@ -154,9 +160,25 @@ class WC_Site(GDO):
     def update_scores(self, regat: 'WC_RegAt') -> bool:
         raise WCException(t('err_not_implemented'))
 
-    def calc_site_score(self):
-        pass
+    def calc_average(self) -> int:
+        from gdo.wechall.WC_RegAt import WC_RegAt
+        return int(round(float(WC_RegAt.table().select('AVG(regat_onsite_score)').where(f'regat_site={self.get_id()} AND regat_onsite_score > 0').exec().fetch_val() or 0)))
 
+    def calc_average_percent(self):
+        return NumericUtil.clamp(self.calc_average() / (self.gdo_value('site_max_score') or 1), 0, 1)
+
+    def calc_site_score(self):
+        bs = self.gdo_value('site_base_score')
+        bs += int(self.gdo_value('site_chall_count') or 0) * int(self.gdo_value('site_score_per_chall') or 0)
+        avg = self.calc_average_percent()
+        score = bs + bs * (1 - avg)
+        return int(round(score))
+
+    def recalc_site(self):
+        from gdo.wechall.WC_RegAt import WC_RegAt
+        score = self.calc_site_score()
+        self.save_val('site_score', str(score))
+        WC_RegAt.calc_scores(self)
 
     ########
     # URLs #

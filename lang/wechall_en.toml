@@ -1,3 +1,4 @@
+sitename = "WeChall"
 module_wechall = "Wechall"
 
 mt_wechall_sites = "Sites"
@@ -5,3 +6,6 @@ md_wechall_sites = "Other challenge sites on WeChall."
 
 mt_wechall_add_site = "Add Site"
 md_wechall_add_site = "Add a new challenge site."
+
+mt_wechall_ranking = "Global Ranking"
+md_wechall_ranking = "The global ranking for many challenge sites connected and summarized."

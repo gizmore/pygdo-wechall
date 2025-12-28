@@ -44,6 +44,7 @@ class module_wechall(GDO_Module):
 
     def gdo_dependencies(self) -> list:
         return [
+            'avatar',
             'bootstrap5',
             'contact',
             'country',
@@ -59,7 +60,8 @@ class module_wechall(GDO_Module):
 
     def gdo_admin_links(self) -> list[GDT_Link]:
         return [
-            GDT_Link().href(self.href('import_wc5')).text('btn_import_wc5'),
+            GDT_Link().href(self.href('import_wc5')).text('mt_wechall_import_wc5'),
+            GDT_Link().href(self.href('recalc')).text('mt_wechall_recalc'),
         ]
 
     def gdo_init_sidebar(self, page: 'GDT_Page'):
