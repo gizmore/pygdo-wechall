@@ -4,6 +4,7 @@ from gdo.base.Query import Query
 from gdo.core.GDO_User import GDO_User
 from gdo.core.GDT_Bool import GDT_Bool
 from gdo.country.GDT_Country import GDT_Country
+from gdo.date.Time import Time
 from gdo.table.MethodQueryTable import MethodQueryTable
 from gdo.ui.GDT_Rank import GDT_Rank
 from gdo.ui.GDT_Score import GDT_Score
@@ -13,6 +14,9 @@ from gdo.wechall.WC_RegAt import WC_RegAt
 
 
 class ranking(MethodQueryTable):
+
+    def gdo_cached(cls) -> int:
+        return Time.ONE_MINUTE * 15
 
     def gdo_searched(self) -> bool:
         return False
