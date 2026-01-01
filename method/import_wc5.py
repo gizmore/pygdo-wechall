@@ -4,7 +4,6 @@ from gdo.base.Database import Database
 from gdo.base.Util import gdo_print, Files
 from gdo.core.GDO_File import GDO_File
 from gdo.core.GDO_Server import GDO_Server
-from gdo.core.GDO_User import GDO_User
 from gdo.core.GDO_UserSetting import GDO_UserSetting
 from gdo.core.GDT_Bool import GDT_Bool
 from gdo.core.GDT_UInt import GDT_UInt
@@ -62,7 +61,7 @@ class import_wc5(MethodForm):
 
     def gdo_create_form(self, form: GDT_Form) -> None:
         form.add_fields(
-            GDT_UInt('samples').initial('5000'),
+            GDT_UInt('samples').initial('0'),
             GDT_Bool('users').initial('1'),
             GDT_Bool('sites').initial('1'),
             GDT_Bool('regat').initial('1'),
