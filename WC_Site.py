@@ -53,7 +53,7 @@ class WC_Site(GDO):
     @classmethod
     @gdo_cached(cache_key='wc_sites_joined')
     def all_joined(cls) -> list[WC_Site]:
-        return cls.table().select().where(cls.where_joined()).exec().fetch_all()
+        return cls.table().select().where(cls.where_joined()).order('site_joined DESC').exec().fetch_all()
 
     @classmethod
     def where_joined(cls):
@@ -219,6 +219,7 @@ class WC_Site(GDO):
 
         })
         WC_SiteHistory.on_update(self, usercount, challcount)
+
     ##########
     # Render #
     ##########
@@ -231,3 +232,13 @@ class WC_Site(GDO):
         if file: file = file[0].get_id()
         return icon.href(href('wechall', 'site_logo', f'&site={self.get_id()}&file={file}')).render_html()
 
+    def render_progress_icon(self, user: GDO_User, onsite_score: int, wc_score: int):
+        progress = NumericUtil.clamp(onsite_score / (self.gdo_value('site_max_score') or 1), 0, 1)
+        size = int(round(max(32 * progress, 2)))
+        title = t('wc_site_progress_icon', (user.render_name(), progress * 100, self.render_name(), wc_score))
+        image = GDT_Image.column(self, 'site_logo').alternate('wc_site_progress_icon_for', (self.render_name(),)).attr('title', title).width(size).height(size)
+        if progress >= 1:
+            image.add_class('completed')
+        else:
+            image.remove_class('completed')
+        return '<span>' + image.render_html() + "</span>"

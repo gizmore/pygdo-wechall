@@ -67,6 +67,10 @@ class module_wechall(GDO_Module):
     def gdo_init_sidebar(self, page: 'GDT_Page'):
         WeChallSidebar.init_sidebar(page, self)
 
+    def gdo_load_scripts(self, page: 'GDT_Page'):
+        self.add_js('js/pygdo-wechall.js')
+        self.add_css('css/pygdo-wechall.css')
+
     ##########
     # Config #
     ##########

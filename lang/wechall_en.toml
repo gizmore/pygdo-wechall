@@ -9,3 +9,5 @@ md_wechall_add_site = "Add a new challenge site."
 
 mt_wechall_ranking = "Global Ranking"
 md_wechall_ranking = "The global ranking for many challenge sites connected and summarized."
+wc_site_progress_icon = "%s solved %.02f%% on %s, scoring %d points."
+wc_site_progress_icon_for = "%s Icon"

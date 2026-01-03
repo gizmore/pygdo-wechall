@@ -1,0 +1,18 @@
+.wc_progress_cell {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+}
+.wc_progress_cell span {
+    display: inline-block;
+    width: 34px;
+    height: 34px;
+    vertical-align: center;
+    text-align: center;
+}
+
+.completed {
+    border: 1px solid gold;
+}

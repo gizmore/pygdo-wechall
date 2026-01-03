@@ -4,7 +4,6 @@ from gdo.base.Query import Query
 from gdo.core.GDO_User import GDO_User
 from gdo.core.GDT_Bool import GDT_Bool
 from gdo.country.GDT_Country import GDT_Country
-from gdo.date.Time import Time
 from gdo.table.MethodQueryTable import MethodQueryTable
 from gdo.ui.GDT_Rank import GDT_Rank
 from gdo.ui.GDT_Score import GDT_Score
@@ -15,8 +14,8 @@ from gdo.wechall.WC_RegAt import WC_RegAt
 
 class ranking(MethodQueryTable):
 
-    def gdo_cached(cls) -> int:
-        return Time.ONE_MINUTE * 15
+    # def gdo_cached(cls) -> int:
+    #     return Time.ONE_MINUTE * 15
 
     def gdo_searched(self) -> bool:
         return False
@@ -41,15 +40,25 @@ class ranking(MethodQueryTable):
     def gdo_table_query(self) -> Query:
         query = WC_RegAt.table().select()
         query.select('SUM(regat_score) score')
+        query.select("GROUP_CONCAT(CONCAT(regat_site, ':', regat_onsite_score, ':', regat_score) ORDER BY site_join_date SEPARATOR ',') progress")
         query.join_object('regat_user')
         query.join_object('regat_site')
         GDO_User.join_setting(query, 'country_ethnics', 'country', 'regat_user_t')
+        GDO_User.join_setting(query, 'wc_retired', 'retired', 'regat_user_t')
         query.order('score DESC')
         query.group('regat_user')
         query.where("user_server = 2 AND user_type in ('member') ")
+        query.where("(setting_wc_retired.uset_val IS NULL OR setting_wc_retired.uset_val != '1')")
         if not self.param_value('alltime'): query.where("site_status = 'up'")
         query.fetch_as(GDO_User.table())
         return query
+
+    def get_num_results(self) -> int:
+        query = GDO_User.table().select('COUNT(*)')
+        GDO_User.join_setting(query, 'wc_retired', 'retired', 'gdo_user')
+        query.where("(setting_wc_retired.uset_val IS NULL OR setting_wc_retired.uset_val != '1')")
+        return int(query.exec().fetch_val() or 0)
+
 
     def gdo_table_headers(self) -> list[GDT]:
         return [
@@ -57,11 +66,11 @@ class ranking(MethodQueryTable):
             GDT_Country('country'),
             GDT_Score('score'),
             GDT_ProfileLink('link').with_avatar(),
-            GDT_SiteProgressIcons('progress').joined(),
+            GDT_SiteProgressIcons('progress'),
         ]
 
-    def render_country(self, country, user) -> str:
-        return country.render_html()
+    # def render_country(self, country, user) -> str:
+    #     return country.render_html()
 
     # def render_link(self, link, user) -> str:
-    #     return link.render_cell()
+    #     return link.render_html()
