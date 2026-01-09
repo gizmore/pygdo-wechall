@@ -59,10 +59,9 @@ class ranking(MethodQueryTable):
         query.where("(setting_wc_retired.uset_val IS NULL OR setting_wc_retired.uset_val != '1')")
         return int(query.exec().fetch_val() or 0)
 
-
     def gdo_table_headers(self) -> list[GDT]:
         return [
-            GDT_Rank('rank'),
+            GDT_Rank('rank').rank('100'),
             GDT_Country('country'),
             GDT_Score('score'),
             GDT_ProfileLink('link').with_avatar(),

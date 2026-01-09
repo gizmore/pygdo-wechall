@@ -1,9 +1,11 @@
+import os
 from functools import lru_cache
 
 from gdo.base.Database import Database
-from gdo.base.Util import gdo_print, Files
+from gdo.base.Util import gdo_print, Files, msg
 from gdo.core.GDO_File import GDO_File
 from gdo.core.GDO_Server import GDO_Server
+from gdo.core.GDO_User import GDO_User
 from gdo.core.GDO_UserSetting import GDO_UserSetting
 from gdo.core.GDT_Bool import GDT_Bool
 from gdo.core.GDT_UInt import GDT_UInt
@@ -63,6 +65,7 @@ class import_wc5(MethodForm):
         form.add_fields(
             GDT_UInt('samples').initial('0'),
             GDT_Bool('users').initial('1'),
+            GDT_Bool('avatars').initial('1'),
             GDT_Bool('sites').initial('1'),
             GDT_Bool('regat').initial('1'),
             GDT_Bool('user_history').initial('1'),
@@ -79,6 +82,7 @@ class import_wc5(MethodForm):
         db = Database('localhost', 'wechall', 'wechall', 'wechall')
         if self.param_value('sites'): await self.import_sites(db)
         if self.param_value('users'): await self.import_users(db)
+        if self.param_value('avatars'): await self.import_avatars(db)
         if self.param_value('regat'): await self.import_regat(db)
         if self.param_value('user_history'): await self.import_regat_history(db)
         if self.param_value('site_history'): await self.import_site_history(db)
@@ -120,6 +124,7 @@ class import_wc5(MethodForm):
                 'site_url_profile': row['site_url_profile'],
 
                 'site_score': row['site_score'],
+                'site_score_per_chall': row['site_spc'],
                 'site_base_score': row['site_basescore'],
                 'site_pow_arg': row['site_powarg'],
                 'site_avg': row['site_avg'],
@@ -138,9 +143,9 @@ class import_wc5(MethodForm):
                 'site_has_no_email': '1' if opts & SiteOptions.NO_EMAIL else '0',
             }).soft_replace()
             if not site.get_logo_file():
-                icon_path = module_wechall.instance().file_path(f'import/logo/{site.get_id()}')
+                icon_path = module_wechall.instance().file_path(f'import/dbimg/logo/{site.get_id()}')
                 if Files.is_file(icon_path):
-                    icon = GDO_File.from_path(icon_path)
+                    icon = GDO_File.from_path(icon_path).insert()
                     site.save_val('site_logo', icon.get_id())
 
     async def import_users(self, db: Database):
@@ -157,6 +162,20 @@ class import_wc5(MethodForm):
             count += 1
             if count % 1000 == 0:
                 gdo_print("Importing users: " + str(count))
+
+    async def import_avatars(self, db: Database):
+        avatar_dir = module_wechall.instance().file_path(f'import/dbimg/avatar/')
+        for file_name in os.listdir(avatar_dir):
+            avatar_file = os.path.join(avatar_dir, file_name)
+            if not os.path.isfile(avatar_file):
+                continue
+            new_uid = ImportUtil.userid(file_name)
+            if not new_uid:
+                continue
+            new_user = GDO_User.table().get_by_aid(new_uid)
+            if not new_user.get_setting_val('avatar_file'):
+                avatar = GDO_File.from_path(avatar_file).insert()
+                new_user.save_setting('avatar_file', avatar.get_id())
 
     async def import_regat(self, db: Database):
         result = db.select(f"SELECT * FROM wc4_wc_regat {self.get_limit()}")

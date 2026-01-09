@@ -53,7 +53,7 @@ class WC_Site(GDO):
     @classmethod
     @gdo_cached(cache_key='wc_sites_joined')
     def all_joined(cls) -> list[WC_Site]:
-        return cls.table().select().where(cls.where_joined()).order('site_joined DESC').exec().fetch_all()
+        return cls.table().select().where(cls.where_joined()).order('site_join_date DESC').exec().fetch_all()
 
     @classmethod
     def where_joined(cls):
@@ -106,7 +106,7 @@ class WC_Site(GDO):
 
             GDT_Score('site_score').label('score'),
             GDT_Score('site_base_score').initial('10000').label('base_score'),
-            GDT_Score('site_score_per_chall').label('score_per_chall').initial('100'),
+            GDT_Score('site_score_per_chall').label('score_per_chall').initial('25'),
             GDT_UInt('site_pow_arg').not_null().initial('100'),
             GDT_Float('site_avg'),
 
@@ -175,6 +175,10 @@ class WC_Site(GDO):
         return int(round(score))
 
     def recalc_site(self):
+        self._recalc_site()
+        self._recalc_site()
+
+    def _recalc_site(self):
         from gdo.wechall.WC_RegAt import WC_RegAt
         score = self.calc_site_score()
         self.save_val('site_score', str(score))
@@ -236,9 +240,7 @@ class WC_Site(GDO):
         progress = NumericUtil.clamp(onsite_score / (self.gdo_value('site_max_score') or 1), 0, 1)
         size = int(round(max(32 * progress, 2)))
         title = t('wc_site_progress_icon', (user.render_name(), progress * 100, self.render_name(), wc_score))
-        image = GDT_Image.column(self, 'site_logo').alternate('wc_site_progress_icon_for', (self.render_name(),)).attr('title', title).width(size).height(size)
-        if progress >= 1:
-            image.add_class('completed')
-        else:
-            image.remove_class('completed')
+        image = GDT_Image.column(self, 'site_logo').alternate('wc_site_progress_icon_for', (self.render_name(),)).attr('title', title).width(size).height(size).href(href('wechall', 'site_logo', f'&site={self.get_id()}'))
+        if progress >= 1: image.add_class('completed')
+        else: image.remove_class('completed')
         return '<span>' + image.render_html() + "</span>"

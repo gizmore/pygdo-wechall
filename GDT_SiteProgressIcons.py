@@ -33,5 +33,6 @@ class GDT_SiteProgressIcons(GDT_Field):
 
     def get_data(self, site: WC_Site) -> tuple[int, int]:
         if v := self.get_value():
-            return v.get(site.get_id(), (0, 0))
+            sid = site.get_id()
+            return v.get(sid, (0, 0))
         return 0, 0
