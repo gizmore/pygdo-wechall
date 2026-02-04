@@ -52,7 +52,7 @@ class WC_Site(GDO):
 
     @classmethod
     @gdo_cached(cache_key='wc_sites_joined')
-    def all_joined(cls) -> list[WC_Site]:
+    def all_joined(cls) -> 'list[WC_Site]':
         return cls.table().select().where(cls.where_joined()).order('site_join_date DESC').exec().fetch_all()
 
     @classmethod
@@ -213,7 +213,6 @@ class WC_Site(GDO):
     # Link #
     ########
     def on_link(self, user: GDO_User, onsite_name: str):
-
         pass
 
     def on_update(self, user: GDO_User):

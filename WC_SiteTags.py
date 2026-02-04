@@ -1,6 +1,6 @@
-from gdo.tags.GDO_Tags import GDO_Tags
+from gdo.tags.GDO_TagsTable import GDO_TagsTable
 
 
-class WC_SiteTags(GDO_Tags):
+class WC_SiteTags(GDO_TagsTable):
 
     pass

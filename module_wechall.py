@@ -19,6 +19,10 @@ from gdo.wechall.WC_Site import WC_Site
 
 class module_wechall(GDO_Module):
 
+    def __init__(self):
+        super().__init__()
+        self._priority = 612
+
     def gdo_classes(self):
         from gdo.wechall.WC_RegAt import WC_RegAt
         from gdo.wechall.WC_SiteVoteEdu import WC_SiteVoteEdu
