@@ -8,6 +8,7 @@ from gdo.ui.GDT_Image import GDT_Image
 from gdo.wechall.GDT_Site import GDT_Site
 from gdo.wechall.WC_SiteFavs import WC_SiteFavs
 from gdo.wechall.WeChallSidebar import WeChallSidebar
+from gdo.base.GDO import GDO
 
 if TYPE_CHECKING:
     from gdo.ui.GDT_Page import GDT_Page
@@ -23,7 +24,7 @@ class module_wechall(GDO_Module):
         super().__init__()
         self._priority = 612
 
-    def gdo_classes(self):
+    def gdo_classes(self) -> list[type[GDO]]:
         from gdo.wechall.WC_RegAt import WC_RegAt
         from gdo.wechall.WC_SiteVoteEdu import WC_SiteVoteEdu
         from gdo.wechall.WC_Site import WC_Site
