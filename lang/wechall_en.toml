@@ -1,5 +1,7 @@
-sitename = "WeChall"
 module_wechall = "Wechall"
+
+sitename = "WeChall"
+sitedesc = "A WeChall re-implementation with the PyGDO Chat System."
 
 mt_wechall_sites = "Sites"
 md_wechall_sites = "Other challenge sites on WeChall."
