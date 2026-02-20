@@ -1,6 +1,7 @@
 from functools import lru_cache
 from typing import TYPE_CHECKING
 
+from gdo.base.Render import Mode
 from gdo.ui.GDT_Bar import GDT_Bar
 from gdo.ui.GDT_Divider import GDT_Divider
 from gdo.ui.GDT_Link import GDT_Link
@@ -30,5 +31,5 @@ class WeChallSidebar:
     def sites_bar(cls):
         sites_bar = GDT_Bar().vertical()
         for site in WC_Site.all_joined():
-            sites_bar.add_field(GDT_Link().text_raw(site.render_name() + "&nbsp;" + site.render_icon(), False).href(site.get_url()))
+            sites_bar.add_field(GDT_Link().text_raw(site.render_name() + "&nbsp;" + site.render_icon(Mode.render_html), False).href(site.get_url()))
         return sites_bar

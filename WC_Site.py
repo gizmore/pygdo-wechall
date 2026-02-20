@@ -2,8 +2,9 @@ from gdo.base.Cache import gdo_cached
 from gdo.base.GDO import GDO
 from gdo.base.GDT import GDT
 from gdo.base.ModuleLoader import ModuleLoader
+from gdo.base.Render import Mode
 from gdo.base.Trans import t
-from gdo.base.Util import NumericUtil
+from gdo.base.Util import NumericUtil, module_config_value
 from gdo.base.util.href import href
 from gdo.core.GDO_File import GDO_File
 from gdo.core.GDO_User import GDO_User
@@ -229,9 +230,9 @@ class WC_Site(GDO):
     def render_name(self):
         return self.gdo_val('site_name')
 
-    def render_icon(self):
+    def render_icon(self, mode: Mode):
         icon = GDT_Image.column(self, 'site_logo')
-        file = icon.get_file() or ModuleLoader.instance().get_module('wechall').cfg_default_logo()
+        file = icon.get_file() or module_config_value('wechall', 'default_logo')
         if file: file = file[0].get_id()
         return icon.href(href('wechall', 'site_logo', f'&site={self.get_id()}&file={file}')).render_html()
 
