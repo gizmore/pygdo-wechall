@@ -1,7 +1,6 @@
-from gdo.base.Cache import gdo_cached
+from gdo.base.Cache import gdo_redis_cached
 from gdo.base.GDO import GDO
 from gdo.base.GDT import GDT
-from gdo.base.ModuleLoader import ModuleLoader
 from gdo.base.Render import Mode
 from gdo.base.Trans import t
 from gdo.base.Util import NumericUtil, module_config_value
@@ -47,12 +46,12 @@ if TYPE_CHECKING:
 class WC_Site(GDO):
 
     @classmethod
-    @gdo_cached(cache_key='wc_site_count')
+    @gdo_redis_cached(cache_key='wc_site_count')
     def num_sites(cls) -> int:
         return cls.table().count_where(cls.where_joined())
 
     @classmethod
-    @gdo_cached(cache_key='wc_sites_joined')
+    @gdo_redis_cached(cache_key='wc_sites_joined')
     def all_joined(cls) -> 'list[WC_Site]':
         return cls.table().select().where(cls.where_joined()).order('site_join_date DESC').exec().fetch_all()
 
