@@ -23,7 +23,7 @@ class WeChallInstall:
             'site_name': 'PyGDO-WeChall',
             'site_short_name': 'WC2',
             'site_class_name': 'Base',
-            'site_description': 'A remake of WeChall in PyGDO. Old site is linked as WeChallPHP.',
+            'site_description_input': 'A remake of WeChall in PyGDO. Old site is linked as WeChallPHP.',
         }).soft_replace()
         mod = module_wechall.instance()
         if not mod.cfg_default_logo():
