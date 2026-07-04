@@ -3,6 +3,7 @@ from gdo.base.GDT import GDT
 from gdo.base.util.href import href
 from gdo.table.MethodQueryTable import MethodQueryTable
 from gdo.ui.GDT_Bar import GDT_Bar
+from gdo.ui.GDT_Button import GDT_Button
 from gdo.ui.GDT_Link import GDT_Link
 from gdo.ui.GDT_Menu import GDT_Menu
 from gdo.wechall.WC_Site import WC_Site
@@ -16,10 +17,10 @@ class sites(MethodQueryTable):
     def gdo_table_headers(self) -> list[GDT]:
         s = WC_Site.table()
         return [
+            GDT_Button('edit'),
             s.column('site_id'),
             s.column('site_name'),
             s.column('site_url'),
-
         ]
 
     async def execute(self):

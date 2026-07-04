@@ -26,6 +26,8 @@ from gdo.forum.GDT_Thread import GDT_Thread
 from gdo.language.GDT_Language import GDT_Language
 from gdo.message.GDT_Message import GDT_Message
 from gdo.net.GDT_Url import GDT_Url
+from gdo.tags.GDO_Tag import GDO_Tag
+from gdo.tags.WithTags import WithTags
 from gdo.ui.GDT_Color import GDT_Color
 from gdo.ui.GDT_Image import GDT_Image
 from gdo.ui.GDT_Score import GDT_Score
@@ -43,7 +45,10 @@ if TYPE_CHECKING:
     from gdo.wechall.WC_RegAt import WC_RegAt
 
 
-class WC_Site(GDO):
+class WC_Site(WithTags, GDO):
+
+    def gdo_tags_table(self) -> GDO_Tag:
+        pass
 
     @classmethod
     @gdo_redis_cached(cache_key='wc_site_count')

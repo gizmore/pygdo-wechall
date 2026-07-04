@@ -28,6 +28,7 @@ class module_wechall(GDO_Module):
         from gdo.wechall.WC_RegAt import WC_RegAt
         from gdo.wechall.WC_SiteVoteEdu import WC_SiteVoteEdu
         from gdo.wechall.WC_Site import WC_Site
+        from gdo.wechall.WC_SiteTag import WC_SiteTag
         from gdo.wechall.WC_SiteTags import WC_SiteTags
         from gdo.wechall.WC_SiteVoteDiff import WC_SiteVoteDiff
         from gdo.wechall.WC_SiteVoteFun import WC_SiteVoteFun
@@ -39,6 +40,7 @@ class module_wechall(GDO_Module):
             WC_SiteHistory,
             WC_SiteFavs,
             WC_SiteAdmin,
+            WC_SiteTag,
             WC_SiteTags,
             WC_SiteVoteDiff,
             WC_SiteVoteEdu,
@@ -56,6 +58,7 @@ class module_wechall(GDO_Module):
             'forum',
             'likes',
             'markdown',
+            'tags',
             'vote',
         ]
 
