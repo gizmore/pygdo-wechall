@@ -31,7 +31,7 @@ class WC_RegAt(GDO):
         return GDT_Success().text('msg_wc_linked')
 
     @classmethod
-    def calc_scores(cls, site: WC_Site, user: GDO_User = None):
+    def calc_scores(cls, site: 'WC_Site', user: GDO_User = None):
         max = site.gdo_val('site_max_score')
         powarg = site.gdo_val('site_pow_arg')
         challcount = int(site.gdo_val('site_chall_count') or 0)
@@ -66,4 +66,3 @@ class WC_RegAt(GDO):
 
     def get_user(self) -> GDO_User:
         return self.gdo_value('regat_user')
-
