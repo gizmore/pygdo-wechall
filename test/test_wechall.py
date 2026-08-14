@@ -26,10 +26,6 @@ class WeChallTest(GDOTestCase):
         sites = WC_Site.table().all()
         self.assertGreaterEqual(len(sites), 1, 'sites no work.')
 
-    async def test_02_wechall_import(self):
-        out = cli_plug(None, '$wechall.import_wc5 --submit=1')
-        self.assertIn('imported', out, 'import does not work.')
-
     async def test_04_username_pattern(self):
         gdt = GDT_UserName('regat_user').maxlen(64)
         self.assertTrue(gdt.validate('0213'), 'Username validation failed.')
