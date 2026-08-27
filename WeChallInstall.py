@@ -13,10 +13,10 @@ class WeChallInstall:
     @classmethod
     async def on_install(cls):
         await cls.site_admin_permissions()
-        cls.create_wechall()
+        await cls.create_wechall()
 
     @classmethod
-    def create_wechall(cls):
+    async def create_wechall(cls):
         WC_Site.blank({
             'site_id': '107',
             'site_status': GDT_SiteState.UP,
@@ -28,7 +28,7 @@ class WeChallInstall:
         mod = module_wechall.instance()
         if not mod.cfg_default_logo():
             file = GDO_File.from_path(mod.file_path('img/default_logo.png')).insert()
-            mod.save_config_val('default_logo', file.get_id())
+            await mod.save_config_val('default_logo', file.get_id())
 
     @classmethod
     async def site_admin_permissions(cls):
